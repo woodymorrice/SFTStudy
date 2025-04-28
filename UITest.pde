@@ -1,11 +1,23 @@
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.TokenMaker;
+import org.fife.ui.rsyntaxtextarea.modes.JavaTokenMaker;
+
+
+final float SCROLLBAR_WIDTH = 20;
+
+
 float sidebarWidthRatio = 0.2;
 float previewHeightRatio = 0.33;
 
 float sidebarWidth;
 float previewTop;
 
-ScrollBar scrollBar1;
 ScrollBar scrollBar2;
+
+ScrollPane pageView;
 
 void setup() {
   size(1440,900); // 1920 x 1080
@@ -13,18 +25,32 @@ void setup() {
   sidebarWidth = sidebarWidthRatio * width;
   previewTop = height - previewHeightRatio*height;
   
-  float sb1Width = 20;
-  scrollBar1 = new ScrollBar(width-sb1Width, 0, sb1Width, height);
-  float sb2Width = 20;
-  scrollBar2 = new ScrollBar(sidebarWidth-sb2Width, 0, sb2Width, previewTop);
+  // list view
+  scrollBar2 = new ScrollBar(sidebarWidth-SCROLLBAR_WIDTH, 0, SCROLLBAR_WIDTH, previewTop);
+  
+  // page view
+  pageView = new ScrollPane(sidebarWidth+1, 0, width-(sidebarWidth+1), height);
+  
+  try {
+    List<String> lines = Files.readAllLines(Paths.get(dataPath("BiomeManager.java")));
+    pageView.setText(lines);
+  }
+  catch (Exception e) {
+    print(e);
+  }
+  
+  
 }
 
 void draw() {
   background(bg);
   drawSidebar();
-  
-  scrollBar1.draw();
+
+  // list view
   scrollBar2.draw();
+  
+  // page view
+  pageView.draw();
 }
 
 void drawSidebar() {
@@ -48,21 +74,29 @@ void drawSidebar() {
 //}
 
 void mousePressed() {
-  scrollBar1.handleMousePressed();
   scrollBar2.handleMousePressed();
+  
+  // page view
+  pageView.handleMousePressed();
 }
 
 void mouseReleased() {
-  scrollBar1.handleMouseReleased();
   scrollBar2.handleMouseReleased();
+  
+  // page view
+  pageView.handleMouseReleased();
 }
 
-//void mouseDragged() {
-//  scrollBar1.handleMouseDragged();
-//  scrollBar2.handleMouseDragged();
-//}
+void mouseDragged() {
+  scrollBar2.handleMouseDragged();
+  
+  // page view
+  pageView.handleMouseDragged();
+}
 
 void mouseMoved() {
-  scrollBar1.handleMouseMoved();
   scrollBar2.handleMouseMoved();
+  
+  // page view
+  pageView.handleMouseMoved();
 }

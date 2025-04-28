@@ -1,5 +1,5 @@
 class ScrollBar {
-  float left, top, sbWidth, sbHeight, buttonWidth, buttonHeight, thumbTop, thumbHeight;
+  float sbLeft, sbTop, sbWidth, sbHeight, buttonWidth, buttonHeight, thumbZero, thumbTop, thumbHeight;
   boolean draggingThumb = false;
   boolean upPressed = false;
   boolean downPressed = false;
@@ -9,73 +9,91 @@ class ScrollBar {
   final color highlightColor = fg4;
   final color selectedColor = aqua2;
   
+  final float scrollAmount = 2.0;
+  
   color thumbColor = defaultForegroundColor;
   color upButtonColor = defaultForegroundColor;
   color downButtonColor = defaultForegroundColor;
   
-  // Dragging logic
-  float scrollOffset = 0; // Scroll offset in pixels
   
-  
-  public ScrollBar(float left, float top, float sbWidth, float sbHeight) {
-    this.left = left;
-    this.top = top;
+  public ScrollBar(float sbLeft, float sbTop, float sbWidth, float sbHeight) {
+    this.sbLeft = sbLeft;
+    this.sbTop = sbTop;
     this.sbWidth = sbWidth;
     this.sbHeight = sbHeight;
     
     this.buttonWidth = sbWidth;
-    this.buttonHeight = sbWidth;
+    this.buttonHeight = sbWidth; // square buttons
     
-    this.thumbTop = top + buttonHeight;
+    this.thumbZero = sbTop + buttonHeight;
+    this.thumbTop = thumbZero;
     // change this, it should depend on the contents of the scrollPane
     this.thumbHeight = sbHeight/4;
   }
   
   
   void draw() {
+    updateScrollWithButton();
+    
     // draw scrollbar track
     fill(defaultBackgroundColor);
-    rect(left, top, sbWidth, sbHeight);
+    rect(sbLeft, sbTop, sbWidth, sbHeight);
     
     // draw scrollbar thumb
     fill(thumbColor);
-    rect(left, thumbTop, sbWidth, thumbHeight);
+    rect(sbLeft, thumbTop, sbWidth, thumbHeight);
     
     // draw up arrow button
     fill(upButtonColor);
-    rect(left, top, buttonWidth, buttonHeight);
+    rect(sbLeft, sbTop, buttonWidth, buttonHeight);
     fill(defaultBackgroundColor);
     triangle(
-      left+buttonWidth*1/2, top+buttonHeight*1/4,
-      left+buttonWidth*1/4, top+buttonHeight*3/4,
-      left+buttonWidth*3/4, top+buttonHeight*3/4
+      sbLeft+buttonWidth*1/2, sbTop+buttonHeight*1/4,
+      sbLeft+buttonWidth*1/4, sbTop+buttonHeight*3/4,
+      sbLeft+buttonWidth*3/4, sbTop+buttonHeight*3/4
     );
     
     // draw down arrow button
     float downArrowTop = sbHeight-buttonHeight;
     fill(downButtonColor);
-    rect(left, downArrowTop, buttonWidth, buttonHeight);
+    rect(sbLeft, downArrowTop, buttonWidth, buttonHeight);
     fill(defaultBackgroundColor);
     triangle(
-      left+buttonWidth*1/4, downArrowTop+buttonHeight*1/4,
-      left+buttonWidth*3/4, downArrowTop+buttonHeight*1/4,
-      left+buttonWidth*1/2, downArrowTop+buttonHeight*3/4
+      sbLeft+buttonWidth*1/4, downArrowTop+buttonHeight*1/4,
+      sbLeft+buttonWidth*3/4, downArrowTop+buttonHeight*1/4,
+      sbLeft+buttonWidth*1/2, downArrowTop+buttonHeight*3/4
     );
   }
   
+  void updateScrollWithButton() {
+    float minThumbHeight = sbTop+buttonHeight;
+    float maxThumbHeight = sbTop+sbHeight-buttonHeight-thumbHeight;
+    
+    if (upPressed) {
+      thumbTop = constrain(
+        thumbTop -= scrollAmount, minThumbHeight, maxThumbHeight
+      );
+    }
+    if (downPressed) {
+      thumbTop = constrain(
+        thumbTop += scrollAmount, minThumbHeight, maxThumbHeight
+      );
+    }
+  }
+  
   boolean overThumb(float x, float y) {
-    return (x >= left && x <= left+sbWidth &&
+    return (x >= sbLeft && x <= sbLeft+sbWidth &&
             y >= thumbTop && y <= thumbTop+thumbHeight);
   }
   
   boolean overUpButton(float x, float y) {
-    return (x >= left && x <= left+buttonWidth &&
-            y >= top && y <= top+buttonHeight);
+    return (x >= sbLeft && x <= sbLeft+buttonWidth &&
+            y >= sbTop && y <= sbTop+buttonHeight);
   }
   
   boolean overDownButton(float x, float y) {
     float downArrowTop = sbHeight-buttonHeight;
-    return (x >= left && x <= left+buttonWidth &&
+    return (x >= sbLeft && x <= sbLeft+buttonWidth &&
             y >= downArrowTop && y<= downArrowTop+buttonHeight);
   }
   
@@ -99,23 +117,26 @@ class ScrollBar {
       thumbColor = overThumb(mouseX, mouseY) ? highlightColor : defaultForegroundColor;
       draggingThumb = false;
     }
-    
     if (upPressed) {
       upButtonColor = overUpButton(mouseX, mouseY) ? highlightColor : defaultForegroundColor;
       upPressed = false;
     }
-    
     if (downPressed) {
       downButtonColor = overDownButton(mouseX, mouseY) ? highlightColor : defaultForegroundColor;
       downPressed = false;
     }
   }
   
-  //void handleMouseDragged() {
-  //    if (draggingThumb) {
-  //      thumbTop = constrain(mouseY-thumbHeight/2, top+buttonHeight, top+sbHeight-buttonHeight-thumbHeight);
-  //    }
-  //}
+  void handleMouseDragged() {
+      if (draggingThumb) {
+        float minThumbHeight = sbTop+buttonHeight;
+        float maxThumbHeight = sbTop+sbHeight-buttonHeight-thumbHeight;
+        
+        thumbTop = constrain(
+          thumbTop += mouseY-pmouseY, minThumbHeight, maxThumbHeight
+        );
+      }
+  }
   
   void handleMouseMoved() {
     if (overThumb(mouseX, mouseY) && !draggingThumb) {
