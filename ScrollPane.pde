@@ -16,13 +16,13 @@ class ScrollPane {
     // vertical scroll bar
     float verticalScrollBarLeft = spLeft+spWidth-SCROLLBAR_SIZE;
     verticalScrollBar = new ScrollBar(
-      verticalScrollBarLeft, spTop, SCROLLBAR_SIZE, spHeight-SCROLLBAR_SIZE
+      textArea, verticalScrollBarLeft, spTop, SCROLLBAR_SIZE, spHeight-SCROLLBAR_SIZE
     );
     
     // horizontal scroll bar
     float horizontalScrollBarTop = spTop+spHeight-SCROLLBAR_SIZE;
     horizontalScrollBar = new ScrollBar(
-      spLeft, horizontalScrollBarTop, spWidth-SCROLLBAR_SIZE, SCROLLBAR_SIZE, true
+      textArea, spLeft, horizontalScrollBarTop, spWidth-SCROLLBAR_SIZE, SCROLLBAR_SIZE, true
     );
   }
   

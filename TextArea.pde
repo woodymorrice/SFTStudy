@@ -2,8 +2,8 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMaker;
 import org.fife.ui.rsyntaxtextarea.modes.JavaTokenMaker;
 
-class TextArea {
-  float taLeft, taTop, taWidth, taHeight, viewLeft, viewTop;
+class TextArea implements Scrollable {
+  float taLeft, taTop, taWidth, taHeight, viewLeft, viewTop, contentWidth, contentHeight;
   List<String> lines;
   
   HashMap<Integer, Integer> tokenColors;
@@ -12,6 +12,9 @@ class TextArea {
   PFont font;
   
   final float textOffset = 5.0; // pixels from the border
+  
+  boolean printBool = true;
+  int nTokensPrinted = 0;
   
   TokenMaker tokenMaker;
   javax.swing.text.Segment segment;
@@ -22,8 +25,10 @@ class TextArea {
     this.taTop = taTop;
     this.taWidth = taWidth;
     this.taHeight = taHeight;
-    this.viewLeft = viewLeft;
-    this.viewTop = viewTop;
+    this.viewLeft = taLeft;
+    this.viewTop = taTop;
+    this.contentWidth = taWidth;
+    this.contentHeight = taHeight;
     
     tokenColors = initTokenColors();
 
@@ -34,6 +39,8 @@ class TextArea {
   
   void setText(List<String> lines) {
     this.lines = lines;
+    contentWidth = taWidth;
+    contentHeight = taHeight;
   }
   
   
@@ -41,26 +48,21 @@ class TextArea {
     return tokenColors.getOrDefault(tokenType, defaultColor);
   }
   
+  float getContentWidth() { return contentWidth; }
+  float getContentHeight() { return contentHeight; }
   float getViewLeft() { return viewLeft; }
-  float getViewTop()  { return viewTop;  }
-  
-  
-  void setViewLeft(float viewLeft) {
-    this.viewLeft = viewLeft;
-  }
-  
-  void setViewTop(float viewTop) {
-    this.viewTop = viewTop;
-  }
+  float getViewTop() { return viewTop; }
+  float getViewWidth() { return taWidth; }
+  float getViewHeight() { return taHeight; }
+  void setViewLeft(float viewLeft) { this.viewLeft = viewLeft; }
+  void setViewTop(float viewTop) { this.viewTop = viewTop; }
   
   void draw() {
     if (lines != null) {
       
       textFont(font);
       textSize(16);
-      
-      float lineX = taLeft;
-      float lineY = taTop;
+
       float lineHeight = textAscent()+textDescent();
       
       for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
@@ -68,12 +70,20 @@ class TextArea {
         javax.swing.text.Segment segment = new javax.swing.text.Segment(line.toCharArray(), 0, line.length());
         Token token = tokenMaker.getTokenList(segment, Token.NULL, 0);
         
-        float x = taLeft+textOffset;
-        float y = taTop+textOffset + lineIndex*lineHeight;
-      
+        float x = viewLeft+textOffset;
+        float y = viewTop+textOffset + lineIndex*lineHeight;
+
         while (token != null && token.isPaintable()) {
           color tokenColor = getColor(token.getType());
           String lexeme = token.getLexeme();
+          
+          if (printBool) {
+            println("Token: " + token.getLexeme() + " -> type: " + token.getType());
+            nTokensPrinted++;
+            if (nTokensPrinted == 300) {
+              printBool = false;
+            }
+          }
           
           fill(tokenColor);
           text(lexeme, x, y+textAscent());
@@ -82,9 +92,14 @@ class TextArea {
           
           token = token.getNextToken(); 
         }
+        
+        if (x > contentWidth) contentWidth = x;   // update width
+        if (y > contentHeight) contentHeight = y; // and height
       }
     }
+    
   }
+
   
   void handleMousePressed() {
 
@@ -115,7 +130,7 @@ class TextArea {
     tokenColors.put(14, green2);  // character
     tokenColors.put(19, blue2);   // annotation
     tokenColors.put(20, yellow2); // identifier
-    tokenColors.put(22, purple2); // separator
+    tokenColors.put(22, blue);    // separator
     tokenColors.put(23, aqua2);   // operator
     tokenColors.put(35, red);     // error: identifier
     tokenColors.put(36, red);     // error: number format

@@ -1,6 +1,7 @@
 /* Vertical by default, horizontal if 5th argument is true */
 class ScrollBar {
   float sbLeft, sbTop, sbWidth, sbHeight, buttonWidth, buttonHeight, thumbZero, thumbStart, thumbSize;
+  float minThumb, maxThumb;
   boolean draggingThumb = false;
   boolean decreasePressed = false;
   boolean increasePressed = false;
@@ -18,9 +19,14 @@ class ScrollBar {
   color decreaseButtonColor = defaultForegroundColor;
   color increaseButtonColor = defaultForegroundColor;
   
+  TextArea textArea;
+  
   
   /* Default vertical scrollbar constructor */
-  public ScrollBar(float sbLeft, float sbTop, float sbWidth, float sbHeight) {
+  public ScrollBar(
+    TextArea textArea, float sbLeft, float sbTop, float sbWidth, float sbHeight
+  ) {
+    this.textArea = textArea;
     this.sbLeft = sbLeft;
     this.sbTop = sbTop;
     this.sbWidth = sbWidth;
@@ -29,30 +35,59 @@ class ScrollBar {
     this.buttonWidth = sbWidth;
     this.buttonHeight = sbWidth; // square buttons
     
-    this.thumbZero = sbTop + buttonHeight;
+    this.thumbZero = sbTop+buttonHeight;
     this.thumbStart = thumbZero;
     // change this, it should depend on the contents of the scrollPane
-    this.thumbSize = sbHeight/4;
+    this.thumbSize = updateThumbSize();
   }
   
   /* Horizontal scrollbar constructor */
-  public ScrollBar(float sbLeft, float sbTop, float sbWidth, float sbHeight, boolean isHorizontal) {
-    this(sbLeft, sbTop, sbWidth, sbHeight);
+  public ScrollBar(
+    TextArea textArea, float sbLeft, float sbTop, float sbWidth, float sbHeight, boolean isHorizontal
+  ) {
+    this(textArea, sbLeft, sbTop, sbWidth, sbHeight);
     
     if (isHorizontal) {
       this.isVertical = false;
       this.buttonWidth = sbHeight;
       this.buttonHeight = sbHeight; // square buttons
       
-      this.thumbZero = sbLeft + buttonWidth;
+      this.thumbZero = sbLeft+buttonWidth;
       this.thumbStart = thumbZero;
       // change this, it should depend on the contents of the scrollPane
-      this.thumbSize = sbWidth/4;
+      this.thumbSize = updateThumbSize();
+    }
+  }
+  
+  float updateThumbSize() {
+    float thumbScale, newSize;
+    if (isVertical) {
+      thumbScale = textArea.getViewHeight()/textArea.getContentHeight();
+      newSize = thumbScale * (sbHeight-2*buttonHeight);
+    }
+    else {    
+      thumbScale = textArea.getViewWidth()/textArea.getContentWidth();
+      newSize = thumbScale * (sbWidth-2*buttonWidth);
+    }
+    
+    updateThumbMinMax(newSize);
+    return newSize;
+  }
+  
+  void updateThumbMinMax(float newSize) {
+    if (isVertical) {
+      minThumb = sbTop+buttonHeight;
+      maxThumb = sbTop+sbHeight-buttonHeight-newSize;
+    }
+    else {
+      minThumb = sbLeft+buttonWidth;
+      maxThumb = sbLeft+sbWidth-buttonWidth-newSize;
     }
   }
   
   
   void draw() {
+    this.thumbSize = updateThumbSize();
     updateScrollWithButton();
     
     // draw scrollbar track
@@ -102,7 +137,6 @@ class ScrollBar {
     }
     else {
       float increaseArrowLeft = sbLeft+sbWidth-buttonWidth;
-      println(increaseArrowLeft);
       rect(increaseArrowLeft, sbTop, buttonWidth, buttonHeight);
       
       fill(defaultBackgroundColor);
@@ -115,16 +149,9 @@ class ScrollBar {
   }
   
   void updateScrollWithButton() {
-    float minThumb, maxThumb;
-    if (isVertical) {
-      minThumb = sbTop+buttonHeight;
-      maxThumb = sbTop+sbHeight-buttonHeight-thumbSize;
-    }
-    else {
-      minThumb = sbLeft+buttonWidth;
-      maxThumb = sbLeft+sbWidth-buttonWidth-thumbSize;
-    }
+    updateThumbMinMax(thumbSize);
     
+    float oldStart = thumbStart;
     if (decreasePressed) {
       thumbStart = constrain(
         thumbStart -= scrollAmount, minThumb, maxThumb
@@ -135,6 +162,7 @@ class ScrollBar {
         thumbStart += scrollAmount, minThumb, maxThumb
       );
     }
+    handleScroll(oldStart-thumbStart);
   }
   
   boolean overThumb(float x, float y) {
@@ -158,12 +186,12 @@ class ScrollBar {
   boolean overIncreaseButton(float x, float y) {
     boolean isOver;
     if (isVertical) {
-      float increaseArrowTop = sbHeight-buttonHeight;
+      float increaseArrowTop = sbTop+sbHeight-buttonHeight;
       isOver = x >= sbLeft && x <= sbLeft+buttonWidth &&
         y >= increaseArrowTop && y<= increaseArrowTop+buttonHeight;
     }
     else {
-      float increaseArrowLeft = sbWidth-buttonWidth;
+      float increaseArrowLeft = sbLeft+sbWidth-buttonWidth;
       isOver = x >= increaseArrowLeft && x <= increaseArrowLeft+buttonWidth &&
         y >= sbTop && y<= sbTop+buttonHeight;
     }
@@ -202,22 +230,39 @@ class ScrollBar {
   
   void handleMouseDragged() {
       if (draggingThumb) {
-        float minThumb, maxThumb;
-        if (isVertical) {
-          minThumb = sbTop+buttonHeight;
-          maxThumb = sbTop+sbHeight-buttonHeight-thumbSize;
-        }
-        else {
-          minThumb = sbLeft+buttonWidth;
-          maxThumb = sbLeft+sbWidth-buttonWidth-thumbSize;
-        }
+        updateThumbMinMax(thumbSize);
         
         float diff = isVertical ? mouseY-pmouseY : mouseX-pmouseX;
         
+        float oldStart = thumbStart;
         thumbStart = constrain(
           thumbStart += diff, minThumb, maxThumb
         );
+        
+        handleScroll(oldStart-thumbStart);
       }
+  }
+  
+  void handleScroll(float thumbDistMoved) {
+    float thumbSpace = maxThumb-minThumb;
+    
+    float contentSpace = isVertical ? textArea.getContentHeight() : textArea.getContentWidth();
+    
+    
+    float ratio = contentSpace/thumbSpace;
+    
+    
+    //float distRatio = textArea.content
+    //float dist = thumbStart-minThumb;
+    
+    //float ratio = dist/total;
+    
+    if (isVertical) {
+      textArea.setViewTop(textArea.getViewTop() + ratio*thumbDistMoved);
+    }
+    else {
+      textArea.setViewLeft(textArea.getViewLeft() + ratio*thumbDistMoved);
+    }
   }
   
   void handleMouseMoved() {

@@ -17,6 +17,12 @@ ScrollBar scrollBar2;
 
 ScrollPane pageView;
 
+
+// Globals
+float gTextWidth = 0;
+float gTextHeight = 0;
+
+
 void setup() {
   size(1440,900); // 1920 x 1080
   
@@ -24,7 +30,7 @@ void setup() {
   previewTop = height - previewHeightRatio*height;
   
   // list view
-  scrollBar2 = new ScrollBar(sidebarWidth-SCROLLBAR_SIZE, 0, SCROLLBAR_SIZE, previewTop);
+  //scrollBar2 = new ScrollBar(null, sidebarWidth-SCROLLBAR_SIZE, 0, SCROLLBAR_SIZE, previewTop);
   
   // page view
   pageView = new ScrollPane(sidebarWidth+1, 0, width-(sidebarWidth+1), height);
@@ -42,16 +48,17 @@ void setup() {
 
 void draw() {
   background(bg);
+  
+  pageView.draw();
   drawSidebar();
 
-  // list view
-  scrollBar2.draw();
   
-  // page view
-  pageView.draw();
 }
 
 void drawSidebar() {
+  fill(bg);
+  rect(0, 0, sidebarWidth, height);
+  
   stroke(bg1);
  
   // sidebar border
@@ -62,28 +69,28 @@ void drawSidebar() {
 }
 
 void mousePressed() {
-  scrollBar2.handleMousePressed();
+  //scrollBar2.handleMousePressed();
   
   // page view
   pageView.handleMousePressed();
 }
 
 void mouseReleased() {
-  scrollBar2.handleMouseReleased();
+  //scrollBar2.handleMouseReleased();
   
   // page view
   pageView.handleMouseReleased();
 }
 
 void mouseDragged() {
-  scrollBar2.handleMouseDragged();
+  //scrollBar2.handleMouseDragged();
   
   // page view
   pageView.handleMouseDragged();
 }
 
 void mouseMoved() {
-  scrollBar2.handleMouseMoved();
+  //scrollBar2.handleMouseMoved();
   
   // page view
   pageView.handleMouseMoved();
