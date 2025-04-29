@@ -1,6 +1,7 @@
 class ScrollPane {
   float spLeft, spTop, spWidth, spHeight;
-  ScrollBar scrollBar;
+  ScrollBar verticalScrollBar;
+  ScrollBar horizontalScrollBar;
   TextArea textArea;
   
   public ScrollPane(float spLeft, float spTop, float spWidth, float spHeight) {
@@ -10,36 +11,49 @@ class ScrollPane {
     this.spHeight = spHeight;
     
     // text area
-    textArea = new TextArea(spLeft, spTop, spWidth-SCROLLBAR_WIDTH, spHeight);
+    textArea = new TextArea(spLeft, spTop, spWidth-SCROLLBAR_SIZE, spHeight-SCROLLBAR_SIZE);
     
-    // scroll bar
-    float scrollBarLeft = spLeft+spWidth-SCROLLBAR_WIDTH;
-    scrollBar = new ScrollBar(scrollBarLeft, spTop, SCROLLBAR_WIDTH, spHeight); 
+    // vertical scroll bar
+    float verticalScrollBarLeft = spLeft+spWidth-SCROLLBAR_SIZE;
+    verticalScrollBar = new ScrollBar(
+      verticalScrollBarLeft, spTop, SCROLLBAR_SIZE, spHeight-SCROLLBAR_SIZE
+    );
+    
+    // horizontal scroll bar
+    float horizontalScrollBarTop = spTop+spHeight-SCROLLBAR_SIZE;
+    horizontalScrollBar = new ScrollBar(
+      spLeft, horizontalScrollBarTop, spWidth-SCROLLBAR_SIZE, SCROLLBAR_SIZE, true
+    );
   }
   
   void draw() {
     textArea.draw();
-    scrollBar.draw();
+    verticalScrollBar.draw();
+    horizontalScrollBar.draw();
   }
   
   void handleMousePressed() {
     textArea.handleMousePressed();
-    scrollBar.handleMousePressed();
+    verticalScrollBar.handleMousePressed();
+    horizontalScrollBar.handleMousePressed();
   }
   
   void handleMouseReleased() {
     textArea.handleMouseReleased();
-    scrollBar.handleMouseReleased();
+    verticalScrollBar.handleMouseReleased();
+    horizontalScrollBar.handleMouseReleased();
   }
   
   void handleMouseDragged() {
     textArea.handleMouseReleased();
-    scrollBar.handleMouseDragged();
+    verticalScrollBar.handleMouseDragged();
+    horizontalScrollBar.handleMouseDragged();
   }
   
   void handleMouseMoved() {
     textArea.handleMouseMoved();
-    scrollBar.handleMouseMoved();
+    verticalScrollBar.handleMouseMoved();
+    horizontalScrollBar.handleMouseMoved();
   }
   
   void setText(List<String> text) {

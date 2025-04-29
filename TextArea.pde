@@ -11,7 +11,7 @@ class TextArea {
   
   PFont font;
   
-  final float textOffset = 2.0; // 2 pixels from the border
+  final float textOffset = 5.0; // pixels from the border
   
   TokenMaker tokenMaker;
   javax.swing.text.Segment segment;

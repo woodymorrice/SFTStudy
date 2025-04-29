@@ -5,9 +5,7 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMaker;
 import org.fife.ui.rsyntaxtextarea.modes.JavaTokenMaker;
 
-
-final float SCROLLBAR_WIDTH = 20;
-
+final float SCROLLBAR_SIZE = 20; // width for vertical, height for horizontal
 
 float sidebarWidthRatio = 0.2;
 float previewHeightRatio = 0.33;
@@ -26,7 +24,7 @@ void setup() {
   previewTop = height - previewHeightRatio*height;
   
   // list view
-  scrollBar2 = new ScrollBar(sidebarWidth-SCROLLBAR_WIDTH, 0, SCROLLBAR_WIDTH, previewTop);
+  scrollBar2 = new ScrollBar(sidebarWidth-SCROLLBAR_SIZE, 0, SCROLLBAR_SIZE, previewTop);
   
   // page view
   pageView = new ScrollPane(sidebarWidth+1, 0, width-(sidebarWidth+1), height);
@@ -62,16 +60,6 @@ void drawSidebar() {
   // border between list and preview
   line(0, previewTop, sidebarWidth, previewTop);
 }
-
-//void drawList() {
-//  // For testing
-//  ArrayList<String> filenames = new ArrayList<>();
-//  filenames.add("file1.cs");
-//  filenames.add("file2.cs");
-//  filenames.add("file3.cs");
-//  filenames.add("file4.cs");
-//  filenames.add("file5.cs");
-//}
 
 void mousePressed() {
   scrollBar2.handleMousePressed();
